@@ -38,7 +38,7 @@ class CoreDatabaseHook(DatabaseHook):
 
                 await connection.execute(
                     "INSERT INTO guild_whitelist VALUES ($1, $2, CURRENT_TIMESTAMP);", 
-                    guild.id, executor
+                    guild.id, executor.id
                 )
 
     async def fetchWhitelistedGuildIds(self) -> List[int]:
