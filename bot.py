@@ -4,6 +4,7 @@ from discord.app_commands import CommandTree
 from database import DatabaseHandler, ConnectionInfo
 from database.adapters import PostgresSQLAdapter
 from Settings import SettingsObject
+from utils.cmdtree import LithiumCommandTree
 import os.path
 
 __all__ = [
@@ -38,7 +39,8 @@ class Lithium(commands.Bot):
             help_command = None,
             intents = discord.Intents.all(),
             application_id = 878908931534106635,
-            activity = activity
+            activity = activity,
+            tree_cls = LithiumCommandTree
         )
 
         self.db = DatabaseHandler(
