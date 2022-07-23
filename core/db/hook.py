@@ -1,6 +1,7 @@
 from typing import Any, List
 from database import DatabaseHook, DatabaseHandler
 from discord import Guild, User
+from discord.ext.commands.errors import CommandError
 import os.path
 
 __all__ = [
@@ -30,6 +31,9 @@ class CoreDatabaseHook(DatabaseHook):
 
                 await connection.execute(schema_contents)
 
+    class GuildNotWhitelisted(CommandError):
+        pass
+
     async def addWhitelistedGuild(self, executor : User, guild : Guild) -> None:
 
         async with self.db.pool.acquire() as connection:
@@ -39,6 +43,16 @@ class CoreDatabaseHook(DatabaseHook):
                 await connection.execute(
                     "INSERT INTO guild_whitelist VALUES ($1, $2, CURRENT_TIMESTAMP);", 
                     guild.id, executor.id
+                )
+
+    async def removeWhitelistedGuild(self, guild : Guild) -> None:
+
+        async with self.db.pool.acquire() as connection:
+
+            async with connection.transaction():
+
+                await connection.execute(
+                    "DELETE FROM guild_whitelist WHERE guildid=$1", guild.id
                 )
 
     async def fetchWhitelistedGuildIds(self) -> List[int]:
