@@ -14,6 +14,8 @@ class LithiumCog(commands.Cog):
     name : Optional[str]
     author : Optional[str]
     version : Optional[Union[str, float]]
+
+    description : Optional[str] = ""
     
     async def cog_load(self):
 

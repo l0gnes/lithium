@@ -4,7 +4,7 @@ from discord.app_commands import CommandTree
 from database import DatabaseHandler, ConnectionInfo
 from database.adapters import PostgresSQLAdapter
 from Settings import SettingsObject
-from utils.cmdtree import LithiumCommandTree
+from utils.LithiumCommandTree import LithiumCommandTree
 import os.path
 
 __all__ = [

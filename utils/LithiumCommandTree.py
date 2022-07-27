@@ -11,7 +11,7 @@ class LithiumCommandTree(CommandTree):
             core_hook = interaction.client.db.get_hook("core")
             check = await core_hook.checkForWhitelistedGuild(interaction.guild)
             
-            if not check and (interaction.user.id not in self.client.settings.master_user_ids or interaction.guild.id not in self.client.settings.master_guild_ids):
+            if not check and (interaction.user.id not in self.client.settings.master_user_ids and interaction.guild.id not in self.client.settings.master_guild_ids):
 
                 await interaction.response.send_message(
                     "`⛔` This guild is not whitelisted.\nContact the bot owner if you believe this is a mistake"

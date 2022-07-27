@@ -4,13 +4,15 @@ from discord.ext import commands
 from .db.hook import CoreDatabaseHook
 from typing import List
 from utils.LithiumCog import LithiumCog
+from utils.LithiumCogInfoFile import LithiumCogInfoFile
+from .utils import repoutils
 
 class Core(LithiumCog):
 
-    ###
+    db_hook : CoreDatabaseHook # While redundant, it helps for linting
+    db_hook_class = CoreDatabaseHook # This is the one that actually matters
 
-    db_hook : CoreDatabaseHook
-    db_hook_class = CoreDatabaseHook
+    ### This should only ever be done in the core cog
 
     cog_id = "core"
     name = "Core"
@@ -24,6 +26,11 @@ class Core(LithiumCog):
     whitelist_commands = app_commands.Group(
         name = "whitelist",
         description = "Administrative commands to whitelist guilds for the bot"
+    )
+
+    repo_commands = app_commands.Group(
+        name = "repo",
+        description = "The gateway command to community cogs"
     )
 
     def __init__(self, client : commands.Bot):
@@ -138,5 +145,60 @@ class Core(LithiumCog):
 
         for page in paginator.pages:
             await interaction.response.send_message(page)
+
+
+    @repo_commands.command(name = "add", description = "Adds a repository to the repository list")
+    async def core_repo_add(self, interaction : discord.Interaction, url : str):
+        
+        repoutils.ensure_repos_directory_exists()
+
+        x = repoutils.decipher_github_uri(url)
+
+        if not x:
+            return await interaction.response.send_message(
+                "Link must be a valid github url."
+            )
+
+        repo_info = await repoutils.fetch_github_repo_info(*x)
+
+        if not repo_info:
+            return await interaction.response.send_message(
+                "Failed to find that repository."
+            )
+
+        # await interaction.response.send_message(
+        #     "Hello World!",
+        #     embed = discord.Embed(
+        #         title = repo_info['full_name']
+        #     ).set_author(
+        #         name = repo_info['owner']['login'],
+        #         icon_url = repo_info['owner']['avatar_url']
+        #     )
+        # )
+
+        # TODO: Insert extra verification steps here with like a button or something idk
+
+        repoutils.create_github_user_folder(repo_info['owner']['login'])
+
+        repo_dir = "./repos/%s/%s" % (repo_info['owner']['login'], repo_info['name'])
+
+        repoutils.clone_repository(
+            repo_info['clone_url'],
+            repo_dir
+        )
+
+        valid_toml_files = repoutils.check_for_valid_cog_tomls(repo_dir)
+        cog_info_object_array = [ LithiumCogInfoFile.from_file(i) for i in valid_toml_files ]
+
+        await interaction.response.send_message(
+            f"{len(cog_info_object_array)} new cogs are available: " + ", ".join(
+                map(lambda n: n.name, cog_info_object_array
+            ))
+        )
+
+
+
+
+
 
 
